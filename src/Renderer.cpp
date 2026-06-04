@@ -101,7 +101,7 @@ void Renderer::drawRect(int x, int y, int w, int h, SDL_Color color)
     CSF(SDL_RenderFillRect(mRenderer, &rect));
 }
 
-void Renderer::renderCursor(const Cursor &cursor, std::string &text)
+void Renderer::renderCursor(const Cursor &cursor, const std::string &text)
 {
     if (mCursorVisible)
     {

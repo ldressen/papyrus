@@ -24,8 +24,8 @@ public:
     void handleRight();
     
     Cursor getCursor() const;
-    std::string getLineString(int i) const;
-    std::vector<std::string> getText() const;
+    const std::string& getLineString(int i) const;
+    const std::vector<std::string>& getText() const;
 
 private:
     Cursor mCursor;

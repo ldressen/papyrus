@@ -21,7 +21,7 @@ public:
     int getLineHeight() const;
     void drawText(const std::string& text, int x, int y);
     void drawRect(int x, int y, int w, int h, SDL_Color color);
-    void renderCursor(const Cursor &cursor, std::string &text);  
+    void renderCursor(const Cursor &cursor, const std::string &text);  
     void renderText(const std::vector<std::string> &text); 
     void renderEditor(const Editor &editor);
     void updateCursor();
