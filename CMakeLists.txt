@@ -1,0 +1,19 @@
+cmake_minimum_required(VERSION 3.20)
+
+project(papyrus)
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+add_subdirectory(third_party/SDL)
+
+
+add_executable(papyrus
+    src/main.cpp
+    #src/Editor.cpp
+)
+
+target_link_libraries(papyrus
+    PRIVATE
+    SDL3::SDL3
+)
