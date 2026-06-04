@@ -1,0 +1,33 @@
+#pragma once
+
+#include <vector>
+#include <string>
+
+#include <SDL3/SDL_stdinc.h>
+
+#include "Renderer.h"
+
+struct Cursor {
+    int row, col;
+};
+
+class Editor{
+
+public:
+    Editor();
+    ~Editor();
+
+    void handleTextInput(const std::string &text);
+    void handleBackSpace();
+    void handleReturn();
+    void handleLeft();
+    void handleRight();
+    
+    Cursor getCursor() const;
+    std::string getLineString(int i) const;
+    std::vector<std::string> getText() const;
+
+private:
+    Cursor mCursor;
+    std::vector<std::string> mText{""};
+};
