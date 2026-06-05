@@ -42,8 +42,21 @@ void Editor::handleReturn()
     markActivity();
 }
 
-void Editor::handleLeft()
+void Editor::handleLeft(SDL_Keymod mod)
 {
+    if (mod & SDL_KMOD_SHIFT)
+    {
+        if (mSelection.end_col > 0)
+        {
+            mSelection.end_col--;
+        }
+        else if (mSelection.end_col == 0 && mSelection.end_row > 0)
+        {
+            mSelection.end_row--;
+            mSelection.end_col = mBuffer.getLineSize(mSelection.end_row);
+        }
+    }
+
     if (mCursor.col > 0)
     {
         mCursor.col--;
@@ -56,8 +69,22 @@ void Editor::handleLeft()
     markActivity();
 }
 
-void Editor::handleRight()
+void Editor::handleRight(SDL_Keymod mod)
 {
+    if (mod & SDL_KMOD_SHIFT)
+    {
+        std::cout << "Selection Right arrow \n";
+        if (mSelection.end_col < mBuffer.getLineSize(mCursor.row))
+        {
+            mSelection.end_col++;
+        }
+        else if (mSelection.end_col == mBuffer.getLineSize(mCursor.row) && mSelection.end_row < mBuffer.getLineCount() - 1)
+        {
+            mSelection.end_row++;
+            mSelection.end_col = 0;
+        }
+    }
+
     if (mCursor.col < mBuffer.getLineSize(mCursor.row))
     {
         mCursor.col++;
@@ -104,6 +131,27 @@ void Editor::handleTab()
 {
     handleTextInput("\t");
     markActivity();
+}
+
+void Editor::handleShift(Uint32 type)
+{
+    if (type == SDL_EVENT_KEY_DOWN)
+    {
+        mSelection.begin_row = mCursor.row;
+        mSelection.begin_col = mCursor.col;
+        mSelection.end_row = mCursor.row;
+        mSelection.end_col = mCursor.col;
+        setSelectionActive(true);
+
+        std::cout << "Shift pressed! (Row,Col): " << mSelection.begin_row << "," << mSelection.begin_col << "\n";
+    }
+    else if (type == SDL_EVENT_KEY_UP)
+    {
+        mSelection.end_row = mCursor.row;
+        mSelection.end_col = mCursor.col;
+        setSelectionActive(false);
+        std::cout << "Shift released! (Row,Col): " << mSelection.end_row << "," << mSelection.end_col << "\n";
+    }
 }
 
 void Editor::loadFile(const std::filesystem::path &path)
@@ -165,12 +213,28 @@ void Editor::markActivity()
 
 bool Editor::consumeActivity()
 {
-    if(!mActivity){
+    if (!mActivity)
+    {
         return false;
     }
 
     mActivity = false;
     return true;
+}
+
+const Selection &Editor::getSelection() const
+{
+    return mSelection;
+}
+
+void Editor::setSelectionActive(bool b)
+{
+    mSelectionActive = b;
+}
+
+bool Editor::getSelectionActive() const
+{
+    return mSelectionActive;
 }
 
 Cursor Editor::getCursor() const

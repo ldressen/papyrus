@@ -1,4 +1,5 @@
 #include <stdexcept>
+#include <iostream>
 
 #include "Renderer.h"
 #include "Editor.h"
@@ -34,7 +35,7 @@ Renderer::~Renderer()
 
 void Renderer::clear()
 {
-    CSF(SDL_SetRenderDrawColor(mRenderer, 20, 20, 20, 255));
+    CSF(SDL_SetRenderDrawColor(mRenderer, 0, 0, 0, 255));
     CSF(SDL_RenderClear(mRenderer));
 }
 
@@ -65,9 +66,10 @@ std::string Renderer::expandTabs(const std::string &text)
     {
         if (c == '\t')
         {
-            result+= "    ";
+            result += "    ";
         }
-        else{
+        else
+        {
             result += c;
         }
     }
@@ -143,8 +145,80 @@ void Renderer::renderText(const std::vector<std::string> &text)
     }
 }
 
+void Renderer::renderSelection(const Editor &editor)
+{
+    Selection selection = editor.getSelection();
+
+    int br = selection.begin_row;
+    int bc = selection.begin_col;
+    int er = selection.end_row;
+    int ec = selection.end_col;
+
+    int start_row, start_col, end_row, end_col;
+
+    if (br < er) {
+        // Normal top-to-bottom selection across lines
+        start_row = br; start_col = bc;
+        end_row = er;   end_col = ec;
+    } 
+    else if (br > er) {
+        // Reverse bottom-to-top selection across lines
+        start_row = er; start_col = ec;
+        end_row = br;   end_col = bc;
+    } 
+    else {
+        // Selection is on the exact same line (br == er)
+        start_row = end_row = br;
+        if (bc <= ec) {
+            // Left-to-right on single line
+            start_col = bc;
+            end_col = ec;
+        } else {
+            // Right-to-left on single line
+            start_col = ec;
+            end_col = bc;
+        }
+    }
+
+    for(int i=start_row; i <= end_row; ++i){
+        int beg, end;
+        if(i == start_row){
+            
+            beg = start_col;
+            // if only one line selected
+            if(start_row == end_row){
+                end = end_col;
+            }
+            else{
+                end = editor.getLineString(i).size();
+            }
+        }
+        // in between line -> should be fully selected
+        else if(i < end_row){
+            beg = 0;
+            end = editor.getLineString(i).size();
+        }
+        else{
+            beg = 0;
+            end = end_col;
+        }
+        std::string selectedText = expandTabs(editor.getLineString(i).substr(beg, end-beg));
+        int x = 20 + measureTextWidth(expandTabs(editor.getLineString(i).substr(0, beg)));
+        int y = 20 + i * getLineHeight();
+        int w = measureTextWidth(selectedText);
+        int h = getLineHeight();
+        std::cout << selectedText << "\n";
+        drawRect(x, y, w, h, SDL_Color{46, 47, 48, 255});
+    }
+}
+
 void Renderer::renderEditor(const Editor &editor)
 {
+    if (editor.getSelectionActive())
+    {
+        renderSelection(editor);
+    }
+
     Cursor cursor = editor.getCursor();
     std::string currentLineText = editor.getLineString(cursor.row);
     renderCursor(cursor, currentLineText);
@@ -163,10 +237,10 @@ void Renderer::updateCursor()
 
 void Renderer::update(Editor &editor)
 {
-    if(editor.consumeActivity()){
+    if (editor.consumeActivity())
+    {
         resetCursorBlink();
     }
-
     updateCursor();
     clear();
     renderEditor(editor);

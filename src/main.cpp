@@ -32,7 +32,9 @@ int main(void)
             }
             if (event.type == SDL_EVENT_KEY_DOWN)
             {
-                switch (event.key.key)
+                SDL_Keycode key = event.key.key;
+                SDL_Keymod mod = event.key.mod;
+                switch (key)
                 {
                 case SDLK_BACKSPACE:
                     editor.handleBackSpace();
@@ -41,10 +43,10 @@ int main(void)
                     editor.handleReturn();
                     break;
                 case SDLK_LEFT:
-                    editor.handleLeft();
+                    editor.handleLeft(mod);
                     break;
                 case SDLK_RIGHT:
-                    editor.handleRight();
+                    editor.handleRight(mod);
                     break;
                 case SDLK_UP:
                     editor.handleUp();
@@ -55,6 +57,10 @@ int main(void)
                 case SDLK_TAB:
                     editor.handleTab();
                     break;
+                case SDLK_LSHIFT:
+                    editor.handleShift(event.type);
+                    break;
+
                 // IO
                 case SDLK_F1:
                     editor.loadFile("./test.txt");
@@ -64,6 +70,18 @@ int main(void)
                     break;
 
                 default:
+                    break;
+                }
+            }
+            else if (event.type == SDL_EVENT_KEY_UP)
+            {
+                SDL_Keycode key = event.key.key;
+                SDL_Keymod mod = event.key.mod;
+
+                switch (key)
+                {
+                case SDLK_LSHIFT:
+                    editor.handleShift(event.type);
                     break;
                 }
             }

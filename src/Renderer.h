@@ -8,6 +8,7 @@
 
 class Cursor;
 class Editor;
+class Selection;
 
 class Renderer{
 
@@ -25,6 +26,7 @@ public:
     void resetCursorBlink();
     void renderCursor(const Cursor &cursor, const std::string &text);  
     void renderText(const std::vector<std::string> &text); 
+    void renderSelection(const Editor &editor);
     void renderEditor(const Editor &editor);
     void updateCursor();
     void update(Editor &editor);
