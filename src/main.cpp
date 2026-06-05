@@ -32,38 +32,29 @@ int main(void)
             }
             if (event.type == SDL_EVENT_KEY_DOWN)
             {
-                if (event.key.key == SDLK_BACKSPACE)
-                {
-                    editor.handleBackSpace();
-                }
-                if (event.key.key == SDLK_RETURN)
-                {
-                    editor.handleReturn();
-                }
-                if (event.key.key == SDLK_LEFT)
-                {
-                    editor.handleLeft();
-                }
-                if (event.key.key == SDLK_RIGHT)
-                {
-                    editor.handleRight();
-                }
-                if (event.key.key == SDLK_UP)
-                {
-                    editor.handleUp();
-                }
-                if (event.key.key == SDLK_DOWN)
-                {
-                    editor.handleDown();
-                }
-                if (event.key.key == SDLK_TAB)
-                {
-                    editor.handleTab();
-                }
-
                 switch (event.key.key)
                 {
-
+                case SDLK_BACKSPACE:
+                    editor.handleBackSpace();
+                    break;
+                case SDLK_RETURN:
+                    editor.handleReturn();
+                    break;
+                case SDLK_LEFT:
+                    editor.handleLeft();
+                    break;
+                case SDLK_RIGHT:
+                    editor.handleRight();
+                    break;
+                case SDLK_UP:
+                    editor.handleUp();
+                    break;
+                case SDLK_DOWN:
+                    editor.handleDown();
+                    break;
+                case SDLK_TAB:
+                    editor.handleTab();
+                    break;
                 // IO
                 case SDLK_F1:
                     editor.loadFile("./test.txt");
