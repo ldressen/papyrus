@@ -1,3 +1,6 @@
+#include <fstream>
+#include <iostream>
+
 #include "Editor.h"
 
 Editor::Editor()
@@ -68,8 +71,8 @@ void Editor::handleUp()
     if (mCursor.row > 0)
     {
         mCursor.row--;
-        bool isUpperShorter = mBuffer.getLineSize(mCursor.row) < mBuffer.getLineSize(mCursor.row+1);
-        bool colGreaterThanLineAbove = mCursor.col >=  mBuffer.getLineSize(mCursor.row);
+        bool isUpperShorter = mBuffer.getLineSize(mCursor.row) < mBuffer.getLineSize(mCursor.row + 1);
+        bool colGreaterThanLineAbove = mCursor.col >= mBuffer.getLineSize(mCursor.row);
         if (isUpperShorter && colGreaterThanLineAbove)
         {
             mCursor.col = mBuffer.getLineSize(mCursor.row);
@@ -79,11 +82,11 @@ void Editor::handleUp()
 
 void Editor::handleDown()
 {
-    if (mCursor.row < mBuffer.getLineCount()-1)
+    if (mCursor.row < mBuffer.getLineCount() - 1)
     {
         mCursor.row++;
-        bool isUpperLonger = mBuffer.getLineSize(mCursor.row-1) > mBuffer.getLineSize(mCursor.row);
-        bool colGreaterThanLineBelow = mCursor.col >=  mBuffer.getLineSize(mCursor.row);
+        bool isUpperLonger = mBuffer.getLineSize(mCursor.row - 1) > mBuffer.getLineSize(mCursor.row);
+        bool colGreaterThanLineBelow = mCursor.col >= mBuffer.getLineSize(mCursor.row);
         if (isUpperLonger && colGreaterThanLineBelow)
         {
             mCursor.col = mBuffer.getLineSize(mCursor.row);
@@ -94,6 +97,58 @@ void Editor::handleDown()
 void Editor::handleTab()
 {
     handleTextInput("\t");
+}
+
+void Editor::loadFile(const std::filesystem::path &path)
+{
+    std::ifstream file{path};
+
+    if (!file.is_open())
+    {
+        std::cerr << "ERROR: Could not open file " << path << "\n";
+        return;
+    }
+    std::vector<std::string> lines;
+    std::string currentLine;
+    while (std::getline(file, currentLine))
+    {
+        lines.push_back(currentLine);
+    }
+
+    mCurrentFilePath = path;
+    mBuffer.setLines(std::move(lines));
+    mCursor.row = mBuffer.getLineCount() - 1;
+    mCursor.col = mBuffer.getLineSize(mCursor.row);
+    std::cout << path << " was loaded! \n";
+}
+
+void Editor::saveFileAs(const std::filesystem::path &path)
+{
+    std::ofstream file{path};
+
+    if (!file.is_open())
+    {
+        std::cerr << "ERROR: Could not open file " << path << "\n";
+        return;
+    }
+
+    std::vector<std::string> lines = mBuffer.getText();
+
+    for (size_t i = 0; i < lines.size(); ++i)
+    {
+        file << lines[i];
+
+        if (i < lines.size() - 1)
+        {
+            file << "\n";
+        }
+    }
+    std::cout << path << " was saved! \n";
+}
+
+void Editor::saveFile()
+{
+    saveFileAs(mCurrentFilePath);
 }
 
 Cursor Editor::getCursor() const

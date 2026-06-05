@@ -40,6 +40,12 @@ void TextBuffer::mergeWithNext(size_t row)
     mLines.erase(mLines.begin() + row+1);
 }
 
+void TextBuffer::setLines(const std::vector<std::string> &lines)
+{
+    mLines.clear();
+    mLines = lines;
+}
+
 const std::string &TextBuffer::getLine(size_t row) const
 {
     if (row < mLines.size())
@@ -59,7 +65,7 @@ size_t TextBuffer::getLineCount() const
     return mLines.size();
 }
 
-const std::vector<std::string> &TextBuffer::getText() const
+const std::vector<std::string>& TextBuffer::getText() const
 {
     return mLines;
 }

@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <string>
+#include <filesystem>
 
 #include <SDL3/SDL_stdinc.h>
 
@@ -26,6 +27,10 @@ public:
     void handleUp();
     void handleDown();
     void handleTab();
+
+    void loadFile(const std::filesystem::path& path);
+    void saveFileAs(const std::filesystem::path& path);
+    void saveFile();
     
     Cursor getCursor() const;
     const std::string& getLineString(int i) const;
@@ -34,4 +39,5 @@ public:
 private:
     Cursor mCursor;
     TextBuffer mBuffer;
+    std::filesystem::path mCurrentFilePath;
 };

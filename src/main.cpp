@@ -60,6 +60,21 @@ int main(void)
                 {
                     editor.handleTab();
                 }
+
+                switch (event.key.key)
+                {
+
+                // IO
+                case SDLK_F1:
+                    editor.loadFile("./test.txt");
+                    break;
+                case SDLK_F2:
+                    editor.saveFileAs("./test2.txt");
+                    break;
+
+                default:
+                    break;
+                }
             }
             if (event.type == SDL_EVENT_QUIT)
             {
