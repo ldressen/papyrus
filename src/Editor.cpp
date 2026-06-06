@@ -2,6 +2,7 @@
 #include <iostream>
 
 #include "Editor.h"
+#include "logger.h"
 
 Editor::Editor()
 {
@@ -73,7 +74,6 @@ void Editor::handleRight(SDL_Keymod mod)
 {
     if (mod & SDL_KMOD_SHIFT)
     {
-        std::cout << "Selection Right arrow \n";
         if (mSelection.end_col < mBuffer.getLineSize(mCursor.row))
         {
             mSelection.end_col++;
@@ -142,15 +142,12 @@ void Editor::handleShift(Uint32 type)
         mSelection.end_row = mCursor.row;
         mSelection.end_col = mCursor.col;
         setSelectionActive(true);
-
-        std::cout << "Shift pressed! (Row,Col): " << mSelection.begin_row << "," << mSelection.begin_col << "\n";
     }
     else if (type == SDL_EVENT_KEY_UP)
     {
         mSelection.end_row = mCursor.row;
         mSelection.end_col = mCursor.col;
         setSelectionActive(false);
-        std::cout << "Shift released! (Row,Col): " << mSelection.end_row << "," << mSelection.end_col << "\n";
     }
 }
 
@@ -174,7 +171,7 @@ void Editor::loadFile(const std::filesystem::path &path)
     mBuffer.setLines(std::move(lines));
     mCursor.row = mBuffer.getLineCount() - 1;
     mCursor.col = mBuffer.getLineSize(mCursor.row);
-    std::cout << path << " was loaded! \n";
+    LOG_INFO() << path << " was loaded!";
 }
 
 void Editor::saveFileAs(const std::filesystem::path &path)
@@ -198,7 +195,7 @@ void Editor::saveFileAs(const std::filesystem::path &path)
             file << "\n";
         }
     }
-    std::cout << path << " was saved! \n";
+    LOG_INFO() << path << " was saved! \n";
 }
 
 void Editor::saveFile()

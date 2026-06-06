@@ -3,6 +3,7 @@
 
 #include "Renderer.h"
 #include "Editor.h"
+#include "logger.h"
 #include "util.h"
 
 Renderer::Renderer(SDL_Window *window)
@@ -207,7 +208,7 @@ void Renderer::renderSelection(const Editor &editor)
         int y = 20 + i * getLineHeight();
         int w = measureTextWidth(selectedText);
         int h = getLineHeight();
-        std::cout << selectedText << "\n";
+        LOG_DEBUG() << selectedText;
         drawRect(x, y, w, h, SDL_Color{46, 47, 48, 255});
     }
 }
