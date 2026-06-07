@@ -148,64 +148,39 @@ void Renderer::renderText(const std::vector<std::string> &text)
 
 void Renderer::renderSelection(const Editor &editor)
 {
-    Selection selection = editor.getSelection();
+    Selection selection = editor.getSelection().normalized();
 
-    int br = selection.begin_row;
-    int bc = selection.begin_col;
-    int er = selection.end_row;
-    int ec = selection.end_col;
+    if(selection.empty()) return;
 
-    int start_row, start_col, end_row, end_col;
+    const Position& start = selection.begin;
+    const Position& end = selection.end;
 
-    if (br < er) {
-        // Normal top-to-bottom selection across lines
-        start_row = br; start_col = bc;
-        end_row = er;   end_col = ec;
-    } 
-    else if (br > er) {
-        // Reverse bottom-to-top selection across lines
-        start_row = er; start_col = ec;
-        end_row = br;   end_col = bc;
-    } 
-    else {
-        // Selection is on the exact same line (br == er)
-        start_row = end_row = br;
-        if (bc <= ec) {
-            // Left-to-right on single line
-            start_col = bc;
-            end_col = ec;
-        } else {
-            // Right-to-left on single line
-            start_col = ec;
-            end_col = bc;
-        }
-    }
-
-    for(int i=start_row; i <= end_row; ++i){
-        int beg, end;
-        if(i == start_row){
+    for(size_t row=start.row; row <= end.row; ++row){
+        int beginCol, endCol;
+        if(row == start.row){
             
-            beg = start_col;
+            beginCol = start.col;
             // if only one line selected
-            if(start_row == end_row){
-                end = end_col;
+            if(start.row == end.row){
+                endCol = end.col;
             }
             else{
-                end = editor.getLineString(i).size();
+                endCol = editor.getLineString(row).size();
             }
         }
         // in between line -> should be fully selected
-        else if(i < end_row){
-            beg = 0;
-            end = editor.getLineString(i).size();
+        else if(row < end.row){
+            beginCol = 0;
+            endCol = editor.getLineString(row).size();
         }
         else{
-            beg = 0;
-            end = end_col;
+            beginCol = 0;
+            endCol = end.col;
         }
-        std::string selectedText = expandTabs(editor.getLineString(i).substr(beg, end-beg));
-        int x = 20 + measureTextWidth(expandTabs(editor.getLineString(i).substr(0, beg)));
-        int y = 20 + i * getLineHeight();
+        const std::string &line = editor.getLineString(row);
+        std::string selectedText = expandTabs(line.substr(beginCol, endCol-beginCol));
+        int x = 20 + measureTextWidth(expandTabs(line.substr(0, beginCol)));
+        int y = 20 + row * getLineHeight();
         int w = measureTextWidth(selectedText);
         int h = getLineHeight();
         LOG_DEBUG() << selectedText;
@@ -215,7 +190,7 @@ void Renderer::renderSelection(const Editor &editor)
 
 void Renderer::renderEditor(const Editor &editor)
 {
-    if (editor.getSelectionActive())
+    if (editor.getSelectionVisible())
     {
         renderSelection(editor);
     }

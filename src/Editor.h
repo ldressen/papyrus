@@ -9,18 +9,62 @@
 #include "Renderer.h"
 #include "TextBuffer.h"
 
-struct Cursor {
+struct Cursor
+{
     size_t row, col;
 };
 
-struct Selection {
-    size_t begin_row;
-    size_t begin_col;
-    size_t end_row;
-    size_t end_col;
+struct Position
+{
+    size_t row, col;
+
+    bool operator==(const Position &other) const
+    {
+        return row == other.row && col == other.col;
+    }
+    bool operator!=(const Position &other) const
+    {
+        return !(*this == other);
+    }
+    bool operator<(const Position &other) const
+    {
+        if (row != other.row)
+        {
+            return row < other.row;
+        }
+
+        return col < other.col;
+    }
+    bool operator>(const Position &other) const
+    {
+        return other < *this;
+    }
 };
 
-class Editor{
+struct Selection
+{
+    Position begin;
+    Position end;
+
+    bool empty() const
+    {
+        return begin == end;
+    }
+
+    Selection normalized() const
+    {
+        if (begin < end)
+        {
+            return *this;
+        }
+        return Selection{
+            .begin = end,
+            .end = begin};
+    }
+};
+
+class Editor
+{
 
 public:
     Editor();
@@ -36,20 +80,23 @@ public:
     void handleTab();
     void handleShift(Uint32 type);
 
-    void loadFile(const std::filesystem::path& path);
-    void saveFileAs(const std::filesystem::path& path);
+    void loadFile(const std::filesystem::path &path);
+    void saveFileAs(const std::filesystem::path &path);
     void saveFile();
 
     void markActivity();
     bool consumeActivity();
+    void markSelectionVisible();
+    bool consumeSelectionVisible();
+    bool getSelectionVisible() const;
 
-    const Selection& getSelection() const;
+    const Selection &getSelection() const;
     void setSelectionActive(bool b);
-    bool getSelectionActive()const;
-    
+    bool getSelectionActive() const;
+
     Cursor getCursor() const;
-    const std::string& getLineString(int i) const;
-    const std::vector<std::string>& getText() const;
+    const std::string &getLineString(int i) const;
+    const std::vector<std::string> &getText() const;
 
 private:
     Selection mSelection{0};
@@ -58,4 +105,5 @@ private:
     std::filesystem::path mCurrentFilePath;
     bool mActivity;
     bool mSelectionActive = false;
+    bool mSelectionVisible = false;
 };

@@ -17,6 +17,8 @@ void Editor::handleTextInput(const std::string &text)
 {
     mBuffer.insert(mCursor.row, mCursor.col, text);
     mCursor.col += text.size();
+    markActivity();
+    consumeSelectionVisible();
 }
 
 void Editor::handleBackSpace()
@@ -33,29 +35,33 @@ void Editor::handleBackSpace()
         mBuffer.mergeWithNext(mCursor.row);
     }
     markActivity();
+    consumeSelectionVisible();
 }
-
 void Editor::handleReturn()
 {
     mBuffer.splitLine(mCursor.row, mCursor.col);
     mCursor.col = 0;
     mCursor.row++;
     markActivity();
+    consumeSelectionVisible();
 }
 
 void Editor::handleLeft(SDL_Keymod mod)
 {
     if (mod & SDL_KMOD_SHIFT)
     {
-        if (mSelection.end_col > 0)
+        if (mSelection.end.col > 0)
         {
-            mSelection.end_col--;
+            mSelection.end.col--;
         }
-        else if (mSelection.end_col == 0 && mSelection.end_row > 0)
+        else if (mSelection.end.col == 0 && mSelection.end.row > 0)
         {
-            mSelection.end_row--;
-            mSelection.end_col = mBuffer.getLineSize(mSelection.end_row);
+            mSelection.end.row--;
+            mSelection.end.col = mBuffer.getLineSize(mSelection.end.row);
         }
+    }
+    else{
+        consumeSelectionVisible();
     }
 
     if (mCursor.col > 0)
@@ -74,15 +80,18 @@ void Editor::handleRight(SDL_Keymod mod)
 {
     if (mod & SDL_KMOD_SHIFT)
     {
-        if (mSelection.end_col < mBuffer.getLineSize(mCursor.row))
+        if (mSelection.end.col < mBuffer.getLineSize(mCursor.row))
         {
-            mSelection.end_col++;
+            mSelection.end.col++;
         }
-        else if (mSelection.end_col == mBuffer.getLineSize(mCursor.row) && mSelection.end_row < mBuffer.getLineCount() - 1)
+        else if (mSelection.end.col == mBuffer.getLineSize(mCursor.row) && mSelection.end.row < mBuffer.getLineCount() - 1)
         {
-            mSelection.end_row++;
-            mSelection.end_col = 0;
+            mSelection.end.row++;
+            mSelection.end.col = 0;
         }
+    }
+    else{
+        consumeSelectionVisible();
     }
 
     if (mCursor.col < mBuffer.getLineSize(mCursor.row))
@@ -110,6 +119,7 @@ void Editor::handleUp()
         }
     }
     markActivity();
+    consumeSelectionVisible();
 }
 
 void Editor::handleDown()
@@ -125,28 +135,31 @@ void Editor::handleDown()
         }
     }
     markActivity();
+    consumeSelectionVisible();
 }
 
 void Editor::handleTab()
 {
     handleTextInput("\t");
     markActivity();
+    consumeSelectionVisible();
 }
 
 void Editor::handleShift(Uint32 type)
 {
     if (type == SDL_EVENT_KEY_DOWN)
     {
-        mSelection.begin_row = mCursor.row;
-        mSelection.begin_col = mCursor.col;
-        mSelection.end_row = mCursor.row;
-        mSelection.end_col = mCursor.col;
+        mSelection.begin.row = mCursor.row;
+        mSelection.begin.col = mCursor.col;
+        mSelection.end.row = mCursor.row;
+        mSelection.end.col = mCursor.col;
         setSelectionActive(true);
+        markSelectionVisible();
     }
     else if (type == SDL_EVENT_KEY_UP)
     {
-        mSelection.end_row = mCursor.row;
-        mSelection.end_col = mCursor.col;
+        mSelection.end.row = mCursor.row;
+        mSelection.end.col = mCursor.col;
         setSelectionActive(false);
     }
 }
@@ -217,6 +230,24 @@ bool Editor::consumeActivity()
 
     mActivity = false;
     return true;
+}
+
+void Editor::markSelectionVisible()
+{
+    mSelectionVisible = true;
+}
+
+bool Editor::consumeSelectionVisible()
+{
+    if(!mSelectionVisible) return false;
+
+    mSelectionVisible = false;
+    return true;
+}
+
+bool Editor::getSelectionVisible() const
+{
+    return mSelectionVisible;
 }
 
 const Selection &Editor::getSelection() const
