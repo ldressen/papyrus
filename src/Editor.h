@@ -76,13 +76,16 @@ public:
     void handleUp(SDL_Keymod mod);
     void handleDown(SDL_Keymod mod);
     void handleHome(SDL_Keymod mod);
+    void handleEnd(SDL_Keymod mod);
 
     void moveCursorLeft();
     void moveCursorRight();
     void moveCursorUp();
     void moveCursorDown();
     void moveCursorToBeginCol();
+    void moveCursorToEndCol();
     void moveCursorToFirstRow();
+    void moveCursorToLastRow();
     
     void ensureCursorVisibleVertically();
 

@@ -32,7 +32,7 @@ void Editor::handleBackSpace()
     else if (mCursor.col == 0 && mCursor.row > 0)
     {
         mCursor.row--;
-        mCursor.col = mBuffer.getLineSize(mCursor.row);
+        moveCursorToEndCol();
         mBuffer.mergeWithNext(mCursor.row);
     }
     markActivity();
@@ -79,7 +79,7 @@ void Editor::moveCursorLeft()
     else if (mCursor.col == 0 && mCursor.row > 0)
     {
         mCursor.row--;
-        mCursor.col = mBuffer.getLineSize(mCursor.row);
+        moveCursorToEndCol();
     }
 }
 
@@ -148,7 +148,7 @@ void Editor::moveCursorUp()
         bool colGreaterThanLineAbove = mCursor.col >= mBuffer.getLineSize(mCursor.row);
         if (isUpperShorter && colGreaterThanLineAbove)
         {
-            mCursor.col = mBuffer.getLineSize(mCursor.row);
+            moveCursorToEndCol();
         }
     }
 }
@@ -184,11 +184,41 @@ void Editor::handleHome(SDL_Keymod mod)
     {
         beginSelection();
     }
-    moveCursorToBeginCol();
-
-    if(ctrlHeld){
+    if (ctrlHeld)
+    {
         moveCursorToFirstRow();
     }
+    
+    moveCursorToBeginCol();
+
+    if (shiftHeld)
+    {
+        updateSelection();
+    }
+    else
+    {
+        clearSelection();
+    }
+
+    ensureCursorVisibleVertically();
+    markActivity();
+}
+
+void Editor::handleEnd(SDL_Keymod mod)
+{
+    bool shiftHeld = mod & SDL_KMOD_SHIFT;
+    bool ctrlHeld = mod & SDL_KMOD_CTRL;
+
+    if (shiftHeld && !mSelectionActive)
+    {
+        beginSelection();
+    }
+    if (ctrlHeld)
+    {
+        moveCursorToLastRow();
+    }
+
+    moveCursorToEndCol();
 
     if (shiftHeld)
     {
@@ -212,7 +242,7 @@ void Editor::moveCursorDown()
         bool colGreaterThanLineBelow = mCursor.col >= mBuffer.getLineSize(mCursor.row);
         if (isUpperLonger && colGreaterThanLineBelow)
         {
-            mCursor.col = mBuffer.getLineSize(mCursor.row);
+            moveCursorToEndCol();
         }
     }
 }
@@ -222,9 +252,19 @@ void Editor::moveCursorToBeginCol()
     mCursor.col = 0;
 }
 
+void Editor::moveCursorToEndCol()
+{
+    mCursor.col = mBuffer.getLineSize(mCursor.row);
+}
+
 void Editor::moveCursorToFirstRow()
 {
     mCursor.row = 0;
+}
+
+void Editor::moveCursorToLastRow()
+{
+    mCursor.row = mBuffer.getLineCount() - 1;
 }
 
 void Editor::handleTab()

@@ -85,6 +85,9 @@ int main(int argc, char *argv[])
                 case SDLK_HOME:
                     editor.handleHome(mod);
                     break;
+                case SDLK_END:
+                    editor.handleEnd(mod);
+                    break;
 
                 // IO
                 case SDLK_F1:
