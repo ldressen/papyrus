@@ -19,6 +19,7 @@ void Editor::handleTextInput(const std::string &text)
     mCursor.col += text.size();
     markActivity();
     clearSelection();
+    ensureCursorVisible();
 }
 
 void Editor::handleBackSpace()
@@ -36,6 +37,7 @@ void Editor::handleBackSpace()
     }
     markActivity();
     clearSelection();
+    ensureCursorVisible();
 }
 void Editor::handleReturn()
 {
@@ -44,6 +46,7 @@ void Editor::handleReturn()
     mCursor.row++;
     markActivity();
     clearSelection();
+    ensureCursorVisible();
 }
 
 void Editor::handleLeft(SDL_Keymod mod)
@@ -63,7 +66,7 @@ void Editor::handleLeft(SDL_Keymod mod)
     {
         clearSelection();
     }
-
+    ensureCursorVisible();
     markActivity();
 }
 
@@ -98,6 +101,7 @@ void Editor::handleRight(SDL_Keymod mod)
         clearSelection();
     }
 
+    ensureCursorVisible();
     markActivity();
 }
 
@@ -126,6 +130,7 @@ void Editor::handleUp()
             mCursor.col = mBuffer.getLineSize(mCursor.row);
         }
     }
+    ensureCursorVisible();
     markActivity();
     clearSelection();
 }
@@ -142,6 +147,7 @@ void Editor::handleDown()
             mCursor.col = mBuffer.getLineSize(mCursor.row);
         }
     }
+    ensureCursorVisible();
     markActivity();
     clearSelection();
 }
@@ -149,6 +155,17 @@ void Editor::handleDown()
 void Editor::handleTab()
 {
     handleTextInput("\t");
+}
+
+void Editor::ensureCursorVisible()
+{
+    if(mCursor.row < mScrollOffsetY){
+        mScrollOffsetY = mCursor.row;
+    }
+    else if(mCursor.row >= mScrollOffsetY + mVisibleRows){
+        mScrollOffsetY = mCursor.row - mVisibleRows +1;
+    }
+    LOG_DEBUG() << "offset: " << mScrollOffsetY;
 }
 
 void Editor::loadFile(const std::filesystem::path &path)
@@ -269,4 +286,19 @@ const uint32_t Editor::getLineCount() const
 const std::vector<std::string> &Editor::getText() const
 {
     return mBuffer.getText();
+}
+
+void Editor::setVisibleRows(uint32_t rows)
+{
+    mVisibleRows = rows;
+}
+
+const uint32_t &Editor::getVisibleRows() const
+{
+    return mVisibleRows;
+}
+
+const uint32_t &Editor::getScrollOffset() const
+{
+    return mScrollOffsetY;
 }

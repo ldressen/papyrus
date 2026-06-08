@@ -77,6 +77,7 @@ public:
     void handleUp();
     void handleDown();
     void handleTab();
+    void ensureCursorVisible();
 
     void loadFile(const std::filesystem::path &path);
     void saveFileAs(const std::filesystem::path &path);
@@ -97,6 +98,9 @@ public:
     const std::string &getLineString(int i) const;
     const uint32_t getLineCount() const;
     const std::vector<std::string> &getText() const;
+    void setVisibleRows(uint32_t rows);
+    const uint32_t& getVisibleRows() const;
+    const uint32_t& getScrollOffset() const;
 
 private:
     Selection mSelection{0};
@@ -105,4 +109,6 @@ private:
     std::filesystem::path mCurrentFilePath;
     bool mActivity;
     bool mSelectionActive = false;
+    uint32_t mScrollOffsetY = 0;
+    uint32_t mVisibleRows = 0;
 };

@@ -1,6 +1,7 @@
 #include <stdexcept>
 #include <iostream>
 #include <string>
+#include <algorithm>
 
 #include "Renderer.h"
 #include "Editor.h"
@@ -27,6 +28,7 @@ Renderer::Renderer(SDL_Window *window)
     }
 
     mLayout.lineHeight = getLineHeight();
+    SDL_GetWindowSize(window, (int *)&mLayout.windowWidth, (int *)&mLayout.windowHeight);
 }
 
 Renderer::~Renderer()
@@ -60,6 +62,11 @@ int Renderer::measureTextWidth(const std::string &text)
 int Renderer::getLineHeight() const
 {
     return TTF_GetFontHeight(mFont);
+}
+
+const EditorLayout &Renderer::getEditorLayout() const
+{
+    return mLayout;
 }
 
 std::string Renderer::expandTabs(const std::string &text)
@@ -128,30 +135,40 @@ void Renderer::resetCursorBlink()
     mLastBlink = SDL_GetTicks();
 }
 
-void Renderer::renderLineNumbers(int numLines)
+void Renderer::renderLineNumbers(uint32_t numLines, uint32_t scrollOffsetY, uint32_t visibleRows)
 {
-    for(uint16_t i = 1; i <= numLines; ++i){
+    uint32_t first = scrollOffsetY;
+    uint32_t last = std::min(first + visibleRows, numLines);
+    for (uint32_t i = first; i < last; ++i)
+    {
 
-        drawText(std::to_string(i), mLayout.lineNumberAreaWidth/2-measureTextWidth(std::to_string(i))/2, mLayout.marginTop + mLayout.lineHeight * (i-1), SDL_Color{66,67,68,255});
+        drawText(std::to_string(i+1), mLayout.lineNumberAreaWidth / 2 - measureTextWidth(std::to_string(i+1)) / 2, screenY(i, scrollOffsetY), SDL_Color{66, 67, 68, 255});
     }
 }
 
-void Renderer::renderCursor(const Cursor &cursor, const std::string &text)
+void Renderer::renderCursor(const Cursor &cursor, const std::string &text, uint32_t offsetY)
 {
     if (mCursorVisible)
     {
-        int x = mLayout.marginLeft + measureTextWidth(expandTabs(text.substr(0, cursor.col)));
-        int y = mLayout.marginTop + cursor.row * mLayout.lineHeight;
+        int x = textX(text, cursor.col);
+        int y = screenY(cursor.row, offsetY);
 
         drawRect(x, y, 2, mLayout.lineHeight, SDL_Color{255, 255, 255, 255});
     }
 }
 
-void Renderer::renderText(const std::vector<std::string> &text)
+void Renderer::renderText(const Editor &editor)
 {
-    for (size_t i = 0; i < text.size(); ++i)
+    auto &text = editor.getText();
+    int visRows = editor.getVisibleRows();
+    int first = editor.getScrollOffset();
+    int last = std::min(
+        first + visRows,
+        (int)text.size());
+
+    for (size_t i = first; i < last; ++i)
     {
-        drawText(expandTabs(text[i]), mLayout.marginLeft, mLayout.marginTop + mLayout.lineHeight * i);
+        drawText(expandTabs(text[i]), mLayout.marginLeft, screenY(i, first));
     }
 }
 
@@ -159,37 +176,47 @@ void Renderer::renderSelection(const Editor &editor)
 {
     Selection selection = editor.getSelection().normalized();
 
-    if(selection.empty()) return;
+    if (selection.empty())
+        return;
 
-    const Position& start = selection.begin;
-    const Position& end = selection.end;
+    const Position &start = selection.begin;
+    const Position &end = selection.end;
 
-    for(size_t row=start.row; row <= end.row; ++row){
+    for (size_t row = start.row; row <= end.row; ++row)
+    {
+        if(row < editor.getScrollOffset()) continue;
+        if(row >= editor.getScrollOffset() + editor.getVisibleRows())break;
+
         int beginCol, endCol;
-        if(row == start.row){
-            
+        if (row == start.row)
+        {
+
             beginCol = start.col;
             // if only one line selected
-            if(start.row == end.row){
+            if (start.row == end.row)
+            {
                 endCol = end.col;
             }
-            else{
+            else
+            {
                 endCol = editor.getLineString(row).size();
             }
         }
         // in between line -> should be fully selected
-        else if(row < end.row){
+        else if (row < end.row)
+        {
             beginCol = 0;
             endCol = editor.getLineString(row).size();
         }
-        else{
+        else
+        {
             beginCol = 0;
             endCol = end.col;
         }
         const std::string &line = editor.getLineString(row);
-        std::string selectedText = expandTabs(line.substr(beginCol, endCol-beginCol));
-        int x = mLayout.marginLeft + measureTextWidth(expandTabs(line.substr(0, beginCol)));
-        int y = mLayout.marginTop + row * mLayout.lineHeight;
+        std::string selectedText = expandTabs(line.substr(beginCol, endCol - beginCol));
+        int x = textX(line, beginCol);
+        int y = screenY(row, editor.getScrollOffset());
         int w = measureTextWidth(selectedText);
         int h = mLayout.lineHeight;
         LOG_DEBUG() << selectedText;
@@ -203,11 +230,11 @@ void Renderer::renderEditor(const Editor &editor)
     {
         renderSelection(editor);
     }
-    renderLineNumbers(editor.getLineCount());
+    renderLineNumbers(editor.getLineCount(), editor.getScrollOffset(), editor.getVisibleRows());
     Cursor cursor = editor.getCursor();
     std::string currentLineText = editor.getLineString(cursor.row);
-    renderCursor(cursor, currentLineText);
-    renderText(editor.getText());
+    renderCursor(cursor, currentLineText, editor.getScrollOffset());
+    renderText(editor);
 }
 
 void Renderer::updateCursor()
@@ -226,6 +253,7 @@ void Renderer::update(Editor &editor)
     {
         resetCursorBlink();
     }
+    editor.setVisibleRows((mLayout.windowHeight - mLayout.marginTop) / mLayout.lineHeight);
     updateCursor();
     clear();
     renderEditor(editor);
@@ -235,4 +263,20 @@ void Renderer::update(Editor &editor)
 void Renderer::present()
 {
     CSF(SDL_RenderPresent(mRenderer));
+}
+
+void Renderer::onResize(uint32_t w, uint32_t h)
+{
+    mLayout.windowWidth = w;
+    mLayout.windowHeight = h;
+}
+
+int Renderer::textX(const std::string &line, uint32_t col)
+{
+    return mLayout.marginLeft + measureTextWidth(expandTabs(line.substr(0, col)));
+}
+
+int Renderer::screenY(uint32_t row, uint32_t scrollOffset) const
+{
+    return mLayout.marginTop + (row - scrollOffset) * mLayout.lineHeight;
 }

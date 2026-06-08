@@ -10,7 +10,7 @@
 #include "Argparser.h"
 #include "util.h"
 
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
     ArgParser parser;
 
@@ -22,12 +22,12 @@ int main(int argc, char* argv[])
         filename = parser.getArgumentValue(filenameArg);
     }
     Argument helpArg = Argument(ArgumentType::BOOL_FLAG, "h");
-    if(parser.hasArgument(helpArg)){
-        std::cout << "usage: papyrus [filename] [option] \n" <<
-        "-h: displays this help message \n"; 
+    if (parser.hasArgument(helpArg))
+    {
+        std::cout << "usage: papyrus [filename] [option] \n"
+                  << "-h: displays this help message \n";
         return 0;
     }
-
 
     SDL_Init(SDL_INIT_VIDEO);
 
@@ -38,7 +38,8 @@ int main(int argc, char* argv[])
 
     Editor editor{};
 
-    if(!filename.empty()){
+    if (!filename.empty())
+    {
         editor.loadFile(filename);
         SDL_SetWindowTitle(window, std::format("papyrus [{}]", filename).c_str());
     }
@@ -94,6 +95,12 @@ int main(int argc, char* argv[])
                 default:
                     break;
                 }
+            }
+            if (event.type == SDL_EVENT_WINDOW_RESIZED)
+            {
+                uint32_t w, h;
+                SDL_GetWindowSize(window, (int *)&w, (int *)&h);
+                sr.onResize(w,h);
             }
             if (event.type == SDL_EVENT_QUIT)
             {
