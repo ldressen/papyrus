@@ -70,15 +70,20 @@ public:
     void handleTextInput(const std::string &text);
     void handleBackSpace();
     void handleReturn();
-    void handleLeft(SDL_Keymod mod);
-    void moveCursorLeft();
-    void handleRight(SDL_Keymod mod);
-    void moveCursorRight();
-    void handleUp(SDL_Keymod mod);
-    void moveCursorUp();
-    void handleDown(SDL_Keymod mod);
-    void moveCursorDown();
     void handleTab();
+    void handleLeft(SDL_Keymod mod);
+    void handleRight(SDL_Keymod mod);
+    void handleUp(SDL_Keymod mod);
+    void handleDown(SDL_Keymod mod);
+    void handleHome(SDL_Keymod mod);
+
+    void moveCursorLeft();
+    void moveCursorRight();
+    void moveCursorUp();
+    void moveCursorDown();
+    void moveCursorToBeginCol();
+    void moveCursorToFirstRow();
+    
     void ensureCursorVisibleVertically();
 
     void loadFile(const std::filesystem::path &path);

@@ -42,7 +42,7 @@ void Editor::handleBackSpace()
 void Editor::handleReturn()
 {
     mBuffer.splitLine(mCursor.row, mCursor.col);
-    mCursor.col = 0;
+    moveCursorToBeginCol();
     mCursor.row++;
     markActivity();
     clearSelection();
@@ -114,7 +114,7 @@ void Editor::moveCursorRight()
     else if (mCursor.col == mBuffer.getLineSize(mCursor.row) && mCursor.row < mBuffer.getLineCount() - 1)
     {
         mCursor.row++;
-        mCursor.col = 0;
+        moveCursorToBeginCol();
     }
 }
 
@@ -175,6 +175,34 @@ void Editor::handleDown(SDL_Keymod mod)
     markActivity();
 }
 
+void Editor::handleHome(SDL_Keymod mod)
+{
+    bool shiftHeld = mod & SDL_KMOD_SHIFT;
+    bool ctrlHeld = mod & SDL_KMOD_CTRL;
+
+    if (shiftHeld && !mSelectionActive)
+    {
+        beginSelection();
+    }
+    moveCursorToBeginCol();
+
+    if(ctrlHeld){
+        moveCursorToFirstRow();
+    }
+
+    if (shiftHeld)
+    {
+        updateSelection();
+    }
+    else
+    {
+        clearSelection();
+    }
+
+    ensureCursorVisibleVertically();
+    markActivity();
+}
+
 void Editor::moveCursorDown()
 {
     if (mCursor.row < mBuffer.getLineCount() - 1)
@@ -187,6 +215,16 @@ void Editor::moveCursorDown()
             mCursor.col = mBuffer.getLineSize(mCursor.row);
         }
     }
+}
+
+void Editor::moveCursorToBeginCol()
+{
+    mCursor.col = 0;
+}
+
+void Editor::moveCursorToFirstRow()
+{
+    mCursor.row = 0;
 }
 
 void Editor::handleTab()

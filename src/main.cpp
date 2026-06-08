@@ -82,6 +82,9 @@ int main(int argc, char *argv[])
                 case SDLK_TAB:
                     editor.handleTab();
                     break;
+                case SDLK_HOME:
+                    editor.handleHome(mod);
+                    break;
 
                 // IO
                 case SDLK_F1:
@@ -100,7 +103,7 @@ int main(int argc, char *argv[])
             {
                 uint32_t w, h;
                 SDL_GetWindowSize(window, (int *)&w, (int *)&h);
-                sr.onResize(w,h);
+                sr.onResize(w, h);
             }
             if (event.type == SDL_EVENT_QUIT)
             {
