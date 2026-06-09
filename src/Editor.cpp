@@ -223,6 +223,18 @@ void Editor::handleEnd(SDL_Keymod mod)
     markActivity();
 }
 
+void Editor::handleA(SDL_Keymod mod)
+{
+    bool ctrlHeld = mod & SDL_KMOD_CTRL;
+    if(ctrlHeld && !mSelectionActive){
+        mSelectionActive = true;
+        mSelection.begin = {0,0};
+        mSelection.end = {mBuffer.getLineCount()-1, mBuffer.getLine(mBuffer.getLineCount()-1).size()};
+        moveCursorToLastRow();
+        moveCursorToEndCol();
+    }
+}
+
 void Editor::handleC(SDL_Keymod mod)
 {
     bool ctrlHeld = mod & SDL_KMOD_CTRL;

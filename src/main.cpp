@@ -54,7 +54,8 @@ int main(int argc, char *argv[])
         Uint64 currentTime = SDL_GetTicksNS();
         Uint64 deltaTime = currentTime - lastTime;
         lastTime = currentTime;
-        if(deltaTime > 0){
+        if (deltaTime > 0)
+        {
             fps = 1000000000.0f / static_cast<float>(deltaTime);
         }
         SDL_SetWindowTitle(window, std::format("papyrus [{}] [{}fps]", filename, (int)fps).c_str());
@@ -101,6 +102,9 @@ int main(int argc, char *argv[])
                     break;
                 case SDLK_DELETE:
                     editor.handleDelete(mod);
+                    break;
+                case SDLK_A:
+                    editor.handleA(mod);
                     break;
                 case SDLK_C:
                     editor.handleC(mod);

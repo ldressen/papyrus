@@ -28,6 +28,7 @@ public:
     void handleDown(SDL_Keymod mod);
     void handleHome(SDL_Keymod mod);
     void handleEnd(SDL_Keymod mod);
+    void handleA(SDL_Keymod mod);
     void handleC(SDL_Keymod mod);
     void handleV(SDL_Keymod mod);
 
