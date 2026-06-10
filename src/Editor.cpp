@@ -253,7 +253,6 @@ void Editor::handleV(SDL_Keymod mod)
     if(ctrlHeld){
         const std::string& text = SDL_GetClipboardText();
         LOG_DEBUG() << text;
-        // TODO multiline text, split at \n, update cursor to last position
         mCursor = mBuffer.insertFormatted(mCursor.row, mCursor.col, text);
     }
 }

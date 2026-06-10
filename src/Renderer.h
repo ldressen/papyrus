@@ -9,6 +9,7 @@
 class Cursor;
 class Editor;
 class Selection;
+class FileBrowser;
 
 struct EditorLayout {
     uint16_t marginTop = 20;
@@ -23,9 +24,10 @@ struct EditorLayout {
 class Renderer{
 
 public:
-    Renderer() = delete;
     Renderer(SDL_Window* window);
     ~Renderer();
+    Renderer(const Renderer&) = delete;
+    Renderer& operator=(const Renderer&) = delete;
 
     void clear();
     int measureTextWidth(const std::string& text);
@@ -41,7 +43,8 @@ public:
     void renderSelection(const Editor &editor);
     void renderEditor(const Editor &editor);
     void updateCursor();
-    void update(Editor &editor);
+    void updateEditor(Editor &editor);
+    void updateFileBrowser(FileBrowser &browser);
     void present();
 
     void onResize(uint32_t w, uint32_t h);

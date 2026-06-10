@@ -1,20 +1,22 @@
 #pragma once
 
 #include <stdexcept>
+
+#include "logger.h"
 /*
     Macro to check the success of an SDL function, throws an error if not successfull
     csf = check sdl function
 */
-#define CSF(x)                                                                             \
-    do                                                                                     \
-    {                                                                                      \
-        if (!(x))                                                                          \
-        {                                                                                  \
-            throw std::runtime_error(                                                      \
-                std::string("SDL error in ") + __FILE__ + ":" + std::to_string(__LINE__) + \
-                "\nCall " + #x +                                                           \
-                "\nSDL_GetError: " + SDL_GetError());                                      \
-        }                                                                                  \
+#define CSF(x)                                                                                        \
+    do                                                                                                \
+    {                                                                                                 \
+        if (!(x))                                                                                     \
+        {                                                                                             \
+            LOG_ERROR() << std::string("SDL error in ") + __FILE__ + ":" + std::to_string(__LINE__) + \
+                               "\nCall " + #x +                                                       \
+                               "\nSDL_GetError: " + SDL_GetError();                                   \
+            exit(1);                                                                                  \
+        }                                                                                             \
     } while (0)
 
 /*

@@ -5,13 +5,14 @@
 
 #include "Renderer.h"
 #include "Editor.h"
+#include "FileBrowser.h"
 #include "logger.h"
 #include "util.h"
 
 Renderer::Renderer(SDL_Window *window)
 {
     mRenderer = SDL_CreateRenderer(window, nullptr);
-    //CSF(SDL_SetRenderVSync(mRenderer, 1)); // TODO maybe make this an option to set manually
+    // CSF(SDL_SetRenderVSync(mRenderer, 1)); // TODO maybe make this an option to set manually
 
     if (!mRenderer)
     {
@@ -222,7 +223,7 @@ void Renderer::renderSelection(const Editor &editor)
         int y = screenY(row, editor.getScrollOffsetY());
         int w = measureTextWidth(selectedText);
         int h = mLayout.lineHeight;
-        //LOG_DEBUG() << selectedText;
+        // LOG_DEBUG() << selectedText;
         drawRect(x, y, w, h, SDL_Color{46, 47, 48, 255});
     }
 }
@@ -230,7 +231,6 @@ void Renderer::renderSelection(const Editor &editor)
 void Renderer::renderEditor(const Editor &editor)
 {
     renderLineNumbers(editor.getLineCount(), editor.getScrollOffsetY(), editor.getVisibleRows());
-    // ensure 
     SDL_Rect clipRect{
         mLayout.marginLeft,
         0,
@@ -261,7 +261,7 @@ void Renderer::updateCursor()
     }
 }
 
-void Renderer::update(Editor &editor)
+void Renderer::updateEditor(Editor &editor)
 {
     if (editor.consumeActivity())
     {
@@ -273,6 +273,18 @@ void Renderer::update(Editor &editor)
     editor.setVisibleRows((mLayout.windowHeight - mLayout.marginTop) / mLayout.lineHeight);
     Cursor cursor = editor.getCursor();
     ensureCursorVisibleHorizontally(cursor, editor.getLineString(cursor.row));
+    present();
+}
+
+void Renderer::updateFileBrowser(FileBrowser &browser)
+{
+    clear();
+    auto toRenderFiles = browser.getCurrentPathDirFiles();
+    for (size_t i = 0; i < toRenderFiles.size(); ++i)
+    {
+        std::string file = toRenderFiles[i];
+        drawText(file, mLayout.marginLeft - mScrollOffsetX, screenY(i, 0));
+    }
     present();
 }
 

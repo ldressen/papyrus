@@ -3,6 +3,13 @@
 #include <stddef.h>
 #include <iostream>
 
+enum class Screen {
+    Editor,
+    FileBrowser,
+    Settings,
+    Terminal
+};
+
 struct Position
 {
     size_t row, col;

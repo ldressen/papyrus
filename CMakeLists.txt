@@ -11,12 +11,16 @@ add_subdirectory(third_party/SDL_ttf)
 
 add_executable(papyrus
     src/main.cpp
+    src/Application.h
+    src/Application.cpp
     src/Renderer.cpp
     src/Renderer.h
     src/Editor.cpp
     src/Editor.h
     src/TextBuffer.cpp
     src/TextBuffer.h
+    src/FileBrowser.h
+    src/FileBrowser.cpp
     src/Argparser.h
     src/logger.h
     src/types.h
