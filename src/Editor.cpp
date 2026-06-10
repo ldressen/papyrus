@@ -15,6 +15,71 @@ Editor::~Editor()
 {
 }
 
+void Editor::handleKey(const SDL_Event &event)
+{
+    if (event.type == SDL_EVENT_TEXT_INPUT)
+    {
+        handleTextInput(event.text.text);
+    }
+    if (event.type == SDL_EVENT_KEY_DOWN)
+    {
+        SDL_Keycode key = event.key.key;
+        SDL_Keymod mod = event.key.mod;
+        switch (key)
+        {
+        case SDLK_BACKSPACE:
+            handleBackSpace();
+            break;
+        case SDLK_RETURN:
+            handleReturn();
+            break;
+        case SDLK_LEFT:
+            handleLeft(mod);
+            break;
+        case SDLK_RIGHT:
+            handleRight(mod);
+            break;
+        case SDLK_UP:
+            handleUp(mod);
+            break;
+        case SDLK_DOWN:
+            handleDown(mod);
+            break;
+        case SDLK_TAB:
+            handleTab();
+            break;
+        case SDLK_HOME:
+            handleHome(mod);
+            break;
+        case SDLK_END:
+            handleEnd(mod);
+            break;
+        case SDLK_DELETE:
+            handleDelete(mod);
+            break;
+        case SDLK_A:
+            handleA(mod);
+            break;
+        case SDLK_C:
+            handleC(mod);
+            break;
+        case SDLK_V:
+            handleV(mod);
+            break;
+
+        // IO
+        case SDLK_F1:
+            loadFile("test.txt");
+            break;
+        case SDLK_F2:
+            saveFileAs("./test2.txt");
+            break;
+        default:
+            break;
+        }
+    }
+}
+
 void Editor::handleTextInput(const std::string &text)
 {
     mBuffer.insert(mCursor.row, mCursor.col, text);
@@ -226,10 +291,11 @@ void Editor::handleEnd(SDL_Keymod mod)
 void Editor::handleA(SDL_Keymod mod)
 {
     bool ctrlHeld = mod & SDL_KMOD_CTRL;
-    if(ctrlHeld && !mSelectionActive){
+    if (ctrlHeld && !mSelectionActive)
+    {
         mSelectionActive = true;
-        mSelection.begin = {0,0};
-        mSelection.end = {mBuffer.getLineCount()-1, mBuffer.getLine(mBuffer.getLineCount()-1).size()};
+        mSelection.begin = {0, 0};
+        mSelection.end = {mBuffer.getLineCount() - 1, mBuffer.getLine(mBuffer.getLineCount() - 1).size()};
         moveCursorToLastRow();
         moveCursorToEndCol();
     }
@@ -239,8 +305,9 @@ void Editor::handleC(SDL_Keymod mod)
 {
     bool ctrlHeld = mod & SDL_KMOD_CTRL;
 
-    if(ctrlHeld){
-        const std::string& text = getSelectedText();
+    if (ctrlHeld)
+    {
+        const std::string &text = getSelectedText();
         LOG_DEBUG() << text;
         SDL_SetClipboardText(text.c_str());
     }
@@ -250,8 +317,9 @@ void Editor::handleV(SDL_Keymod mod)
 {
     bool ctrlHeld = mod & SDL_KMOD_CTRL;
 
-    if(ctrlHeld){
-        const std::string& text = SDL_GetClipboardText();
+    if (ctrlHeld)
+    {
+        const std::string &text = SDL_GetClipboardText();
         LOG_DEBUG() << text;
         mCursor = mBuffer.insertFormatted(mCursor.row, mCursor.col, text);
     }
@@ -454,8 +522,9 @@ const std::string Editor::getSelectedText() const
 {
     Selection selection = mSelection.normalized();
     std::string test = "";
-    if(mSelectionActive){
-        
+    if (mSelectionActive)
+    {
+
         LOG_DEBUG() << selection.begin << " -> " << selection.end;
         test = mBuffer.getTextSlice(selection.begin.row, selection.begin.col, selection.end.row, selection.end.col);
         LOG_DEBUG() << test;

@@ -6,6 +6,7 @@
 
 #include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_keycode.h>
+#include <SDL3/SDL_events.h>
 
 #include "TextBuffer.h"
 #include "types.h"
@@ -17,6 +18,7 @@ public:
     Editor();
     ~Editor();
 
+    void handleKey(const SDL_Event& event);
     void handleTextInput(const std::string &text);
     void handleBackSpace();
     void handleReturn();
