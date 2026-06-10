@@ -62,11 +62,13 @@ void Application::run()
         SDL_Event event;
         while (SDL_PollEvent(&event))
         {
-            if(mCurrentScreen == Screen::Editor){
+            if (mCurrentScreen == Screen::Editor)
+            {
                 mEditor.handleKey(event);
             }
-            else if(mCurrentScreen == Screen::FileBrowser){
-                // TODO
+            else if (mCurrentScreen == Screen::FileBrowser)
+            {
+                mFileBrowser.handleKey(event);
             }
 
             // global key bindings
@@ -108,6 +110,12 @@ void Application::update()
         break;
     case Screen::FileBrowser:
         mRenderer->updateFileBrowser(mFileBrowser);
+        // requests
+        if (auto file = mFileBrowser.consumeOpenRequest())
+        {
+            mEditor.loadFile(*file);
+            mCurrentScreen = Screen::Editor;
+        }
         break;
     default:
         LOG_ERROR() << "Unknown Screen!";

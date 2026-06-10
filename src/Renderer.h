@@ -45,6 +45,7 @@ public:
     void updateCursor();
     void updateEditor(Editor &editor);
     void updateFileBrowser(FileBrowser &browser);
+    void renderFileBrowserSelection(FileBrowser &browser);
     void present();
 
     void onResize(uint32_t w, uint32_t h);

@@ -3,15 +3,30 @@
 #include <filesystem>
 #include <iostream>
 #include <vector>
+#include <optional>
+
+#include <SDL3/SDL_events.h>
+
 class FileBrowser
 {
 
 public:
     FileBrowser() = default;
-    std::vector<std::string> getCurrentPathDirFiles();
+    void updateCurrentDirFiles();
+    std::vector<std::filesystem::path> getCurrentDirFiles();
+    std::vector<std::string> getCurrentDirFilesToRender();
+    const uint32_t getSelectedIndex() const;
+    const std::filesystem::path getSelectedIndexPath() const;
+    std::optional<std::filesystem::path> consumeOpenRequest();
+
+    void handleKey(const SDL_Event &event);
+    void handleReturn();
+    void handleUp();
+    void handleDown();
+
 private:
-
-    std::vector<std::string> currentPathDirFiles;
-
-    std::filesystem::path mCurrentPath;
+    std::vector<std::filesystem::path> mCurrentDirFiles;
+    std::filesystem::path mCurrentDir = std::filesystem::current_path();
+    uint32_t mSelectedIndex = 0;
+    std::optional<std::filesystem::path> mOpenRequest;
 };

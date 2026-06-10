@@ -279,13 +279,23 @@ void Renderer::updateEditor(Editor &editor)
 void Renderer::updateFileBrowser(FileBrowser &browser)
 {
     clear();
-    auto toRenderFiles = browser.getCurrentPathDirFiles();
-    for (size_t i = 0; i < toRenderFiles.size(); ++i)
+    renderFileBrowserSelection(browser);
+    auto FilesToRender = browser.getCurrentDirFilesToRender();
+    for (size_t i = 0; i < FilesToRender.size(); ++i)
     {
-        std::string file = toRenderFiles[i];
+        std::string file = FilesToRender[i];
         drawText(file, mLayout.marginLeft - mScrollOffsetX, screenY(i, 0));
     }
     present();
+}
+
+void Renderer::renderFileBrowserSelection(FileBrowser &browser)
+{
+    int x = mLayout.marginLeft;
+    int y = screenY(browser.getSelectedIndex(), 0);
+    int w = measureTextWidth(browser.getSelectedIndexPath());
+    int h = mLayout.lineHeight;
+    drawRect(x, y, w, h, SDL_Color{46, 47, 108, 255});
 }
 
 void Renderer::present()
