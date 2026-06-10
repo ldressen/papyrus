@@ -554,7 +554,7 @@ const std::string Editor::getSelectedText() const
     {
 
         LOG_DEBUG() << selection.begin << " -> " << selection.end;
-        test = mBuffer.getTextSlice(selection.begin.row, selection.begin.col, selection.end.row, selection.end.col);
+        test = mBuffer.getTextSlice(selection.begin, selection.end);
         LOG_DEBUG() << test;
     }
     return test;

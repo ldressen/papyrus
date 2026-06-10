@@ -42,8 +42,7 @@ Position TextBuffer::insertFormatted(size_t row, size_t col, const std::string &
         mLines[row] = prefix + lines.front() + suffix;
         return {
             row,
-            col + lines[0].size()
-        };
+            col + lines[0].size()};
     }
 
     // first line in multiline case
@@ -52,14 +51,13 @@ Position TextBuffer::insertFormatted(size_t row, size_t col, const std::string &
     // lines in between
     for (size_t i = 1; i < lines.size(); ++i)
     {
-        insertLine(row + i, lines [i]);
+        insertLine(row + i, lines[i]);
     }
 
     // last line
     mLines[row + lines.size() - 1] += suffix;
-    
+
     return {row + lines.size() - 1, lines[lines.size() - 1].size()};
-    
 }
 
 void TextBuffer::insertLine(size_t row, const std::string &text)
@@ -146,24 +144,21 @@ const std::vector<std::string> &TextBuffer::getText() const
     return mLines;
 }
 
-std::string TextBuffer::getTextSlice(size_t start_row, size_t start_col, size_t end_row, size_t end_col) const
+std::string TextBuffer::getTextSlice(Position &start, Position &end) const
 {
     std::string result = "";
-    for (size_t row = start_row; row <= end_row; row++)
+    for (size_t row = start.row; row <= end.row; row++)
     {
-        // auto line = getLine(row);
-        // LOG_DEBUG() << "line: " << line;
-        // result += line.substr(start_col, end_col-start_col);
 
         int beginCol, endCol;
-        if (row == start_row)
+        if (row == start.row)
         {
 
-            beginCol = start_col;
+            beginCol = start.col;
             // if only one line selected
-            if (start_row == end_row)
+            if (start.row == end.row)
             {
-                endCol = end_col;
+                endCol = end.col;
             }
             else
             {
@@ -171,7 +166,7 @@ std::string TextBuffer::getTextSlice(size_t start_row, size_t start_col, size_t 
             }
         }
         // in between line -> should be fully selected
-        else if (row < end_row)
+        else if (row < end.row)
         {
             beginCol = 0;
             endCol = getLineSize(row);
@@ -179,11 +174,11 @@ std::string TextBuffer::getTextSlice(size_t start_row, size_t start_col, size_t 
         else
         {
             beginCol = 0;
-            endCol = end_col;
+            endCol = end.col;
         }
         const std::string &line = getLine(row);
         result += line.substr(beginCol, endCol - beginCol);
-        if (row < end_row)
+        if (row < end.row)
         {
             result += "\n";
         }
