@@ -31,7 +31,7 @@ public:
     Renderer& operator=(const Renderer&) = delete;
 
     void clear();
-    int measureTextWidth(const std::string& text);
+    uint32_t measureTextWidth(const std::string& text);
     int getLineHeight() const;
     const EditorLayout &getEditorLayout() const;
     std::string expandTabs(const std::string& text);

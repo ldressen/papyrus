@@ -9,7 +9,7 @@ std::vector<SearchMatch> SearchEngine::find(const TextBuffer &buffer, const std:
     {
         return matches;
     }
-    int lineCount = buffer.getLineCount();
+    uint32_t lineCount = buffer.getLineCount();
     for (uint32_t i = 0; i < lineCount; i++)
     {
         const std::string &line = buffer.getLine(i);

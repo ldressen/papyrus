@@ -42,11 +42,6 @@ struct Position
     {
         return other < *this;
     }
-    void operator=(const Position &other)
-    {
-        row = other.row;
-        col = other.col;
-    }
     friend std::ostream &operator<<(std::ostream &os, const Position &pos)
     {
         os << "(" << pos.row << ", " << pos.col << ")";
@@ -56,10 +51,10 @@ struct Position
 
 struct Cursor : Position
 {
-    void operator=(const Position &other)
+    Cursor& operator=(const Position &other)
     {
-        row = other.row;
-        col = other.col;
+        Position::operator=(other);
+        return *this;
     }
 };
 

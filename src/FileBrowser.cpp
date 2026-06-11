@@ -103,7 +103,6 @@ void FileBrowser::handleKey(const SDL_Event &event)
     if (event.type == SDL_EVENT_KEY_DOWN)
     {
         SDL_Keycode key = event.key.key;
-        SDL_Keymod mod = event.key.mod;
         switch (key)
         {
         case SDLK_RETURN:

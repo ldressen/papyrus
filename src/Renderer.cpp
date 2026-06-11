@@ -48,7 +48,7 @@ void Renderer::clear()
     CSF(SDL_RenderClear(mRenderer));
 }
 
-int Renderer::measureTextWidth(const std::string &text)
+uint32_t Renderer::measureTextWidth(const std::string &text)
 {
     if (text.empty())
     {
@@ -169,7 +169,7 @@ void Renderer::renderText(const Editor &editor)
         first + visRows,
         (int)text.size());
 
-    for (size_t i = first; i < last; ++i)
+    for (int i = first; i < last; ++i)
     {
         drawText(expandTabs(text[i]), mLayout.marginLeft - mScrollOffsetX, screenY(i, first));
     }
