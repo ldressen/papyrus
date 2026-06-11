@@ -280,11 +280,15 @@ void Renderer::updateFileBrowser(FileBrowser &browser)
 {
     clear();
     renderFileBrowserSelection(browser);
-    uint32_t visibleFiles = (mLayout.windowHeight - mLayout.marginTop) / mLayout.lineHeight;
+
+    std::string currentPathStr = browser.getCurrentDir().string();
+    drawText(currentPathStr, mLayout.marginLeft, mLayout.marginTop);
+
+    uint32_t fileListTopMargin = mLayout.marginTop + (mLayout.lineHeight * 2);
+
+    uint32_t visibleFiles = (mLayout.windowHeight - fileListTopMargin) / mLayout.lineHeight;
     browser.setVisibleFiles(visibleFiles);
     std::vector<std::string> filesToRender = browser.getCurrentDirFilesToRender();
-
-    
     uint32_t first = browser.getScrollOffset();
     uint32_t last = std::min(static_cast<int>(first + visibleFiles), static_cast<int>(filesToRender.size()));
     for (size_t i = first; i < last; ++i)
@@ -293,7 +297,7 @@ void Renderer::updateFileBrowser(FileBrowser &browser)
         std::string extension = browser.getFileExtension(file);
         uint32_t first = browser.getScrollOffset();
         file = fitTextToWidth(file, extension);
-        drawText(file, mLayout.marginLeft, screenY(i, first));
+        drawText(file, mLayout.marginLeft, screenYBrowser(i, first, fileListTopMargin));
     }
     present();
 }
@@ -301,7 +305,7 @@ void Renderer::updateFileBrowser(FileBrowser &browser)
 void Renderer::renderFileBrowserSelection(FileBrowser &browser)
 {
     int x = mLayout.marginLeft;
-    int y = screenY(browser.getSelectedIndex(), browser.getScrollOffset());
+    int y = screenYBrowser(browser.getSelectedIndex(), browser.getScrollOffset(), mLayout.marginTop + (mLayout.lineHeight * 2));
     int w = measureTextWidth(browser.getSelectedIndexPath());
     int h = mLayout.lineHeight;
     drawRect(x, y, w, h, SDL_Color{46, 47, 108, 255});
@@ -376,4 +380,9 @@ int Renderer::textX(const std::string &line, uint32_t col)
 int Renderer::screenY(uint32_t row, uint32_t scrollOffset) const
 {
     return mLayout.marginTop + (row - scrollOffset) * mLayout.lineHeight;
+}
+
+int Renderer::screenYBrowser(uint32_t row, uint32_t scrollOffset, uint32_t margin) const
+{
+    return margin + (row - scrollOffset) * mLayout.lineHeight;
 }

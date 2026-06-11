@@ -55,7 +55,7 @@ public:
 
     int textX(const std::string &line, uint32_t col);
     int screenY(uint32_t row, uint32_t scrollOffset) const;
-
+    int screenYBrowser(uint32_t row, uint32_t scrollOffset, uint32_t margin) const;
 private: 
     Uint64 mLastBlink;
     bool mCursorVisible;

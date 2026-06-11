@@ -15,6 +15,7 @@ public:
     void updateCurrentDirFiles();
     std::vector<std::filesystem::path> getCurrentDirFiles();
     std::vector<std::string> getCurrentDirFilesToRender();
+    const std::filesystem::path getCurrentDir() const;
     const uint32_t getSelectedIndex() const;
     const std::filesystem::path getSelectedIndexPath() const;
     std::optional<std::filesystem::path> consumeOpenRequest();

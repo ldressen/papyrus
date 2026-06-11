@@ -1,3 +1,5 @@
+#include <algorithm>
+
 #include "FileBrowser.h"
 #include "logger.h"
 
@@ -10,6 +12,7 @@ void FileBrowser::updateCurrentDirFiles()
 
     LOG_DEBUG() << "currDir: " << currentDir;
 
+    // parent dir for .. navigation
     if (currentDir.has_parent_path())
     {
         files.push_back(currentDir.parent_path());
@@ -20,6 +23,18 @@ void FileBrowser::updateCurrentDirFiles()
         files.push_back(dir_entry.path());
         LOG_DEBUG() << "file: " << dir_entry.path();
     }
+    // sort alphabetically, maybe add more sorting options in the future
+    std::sort(files.begin() + 1, files.end(), [](const std::filesystem::path &a, const std::filesystem::path &b)
+              {
+        std::string strA = a.generic_string();
+        std::string strB = b.generic_string();
+
+    
+        return std::lexicographical_compare(strA.begin(), strA.end(),strB.begin(), strB.end(),
+            [](unsigned char charA, unsigned char charB) {
+                return std::tolower(charA) < std::tolower(charB);
+            }
+        ); });
     mCurrentDirFiles = files;
 }
 
@@ -45,15 +60,20 @@ std::vector<std::string> FileBrowser::getCurrentDirFilesToRender()
     for (size_t i = 0; i < mCurrentDirFiles.size(); i++)
     {
         // parent directory -> .. in rendering, except root path, TODO: test on Windows
-        if (i== 0 && std::filesystem::is_directory(mCurrentDirFiles[i]) && mCurrentDirFiles[i]!= mCurrentDir.root_directory())
+        if (i == 0 && std::filesystem::is_directory(mCurrentDirFiles[i]) && mCurrentDirFiles[i] != mCurrentDir.root_directory())
         {
             fileStrings.push_back("..");
             continue;
         }
-        fileStrings.push_back(mCurrentDirFiles[i]);
+        fileStrings.push_back(mCurrentDirFiles[i].filename());
     }
 
     return fileStrings;
+}
+
+const std::filesystem::path FileBrowser::getCurrentDir() const
+{
+    return mCurrentDir;
 }
 
 const uint32_t FileBrowser::getSelectedIndex() const
@@ -107,6 +127,8 @@ void FileBrowser::handleReturn()
     {
         LOG_DEBUG() << "Selected Dir: " << selectedPath;
         mCurrentDir = selectedPath;
+        mSelectedIndex = 0;
+        mScrollOffset = 0;
         updateCurrentDirFiles();
     }
     else
