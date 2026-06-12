@@ -249,11 +249,12 @@ void Renderer::renderEditor(const Editor &editor)
     if (editor.isSearchActive())
     {
         renderSearchOverlay(editor.getSearch());
+        renderSearchCursor(editor.getSearch());
     }
     CSF(SDL_SetRenderClipRect(mRenderer, nullptr));
 }
 
-void Renderer::renderHighlightedRange(const std::string &text, uint32_t row, uint32_t col, uint32_t length, uint32_t scrollOffsetY)
+void Renderer::renderHighlightedRange(const std::string &text, uint32_t row, uint32_t col, uint32_t length, uint32_t scrollOffsetY, SDL_Color color)
 {
 
     std::string selectedText = expandTabs(text.substr(col, length));
@@ -261,7 +262,7 @@ void Renderer::renderHighlightedRange(const std::string &text, uint32_t row, uin
     int y = screenY(row, scrollOffsetY);
     int w = measureTextWidth(selectedText);
     int h = mLayout.lineHeight;
-    drawRect(x, y, w, h, SDL_Color{46, 47, 48, 255});
+    drawRect(x, y, w, h, color);
 }
 
 void Renderer::renderSearchOverlay(const SearchSession &session)
@@ -276,6 +277,18 @@ void Renderer::renderSearchOverlay(const SearchSession &session)
     // LOG_DEBUG() << "Render search: " << session.getQuery();
 }
 
+void Renderer::renderSearchCursor(const SearchSession &session)
+{
+    if (mCursorVisible)
+    {
+        uint32_t x = mLayout.marginLeft + mLayout.windowWidth / 2;
+        uint32_t y = mLayout.marginTop + mLayout.lineHeight;
+        uint32_t h = 1.5 * mLayout.lineHeight;
+
+        drawRect(x + 5 + measureTextWidth(session.getQuery().substr(0, session.getCursor())), y + (h / 2) - mLayout.lineHeight / 2, 2, mLayout.lineHeight, SDL_Color{255, 255, 255, 255});
+    }
+}
+
 void Renderer::renderSearchMatches(const SearchSession &session, const Editor &editor)
 {
     if (session.getMatches().size() == 0)
@@ -285,7 +298,7 @@ void Renderer::renderSearchMatches(const SearchSession &session, const Editor &e
     for (SearchMatch &match : session.getMatches())
     {
         const std::string &line = editor.getLineString(match.row);
-        renderHighlightedRange(line, match.row, match.col, match.length, editor.getScrollOffsetY());
+        renderHighlightedRange(line, match.row, match.col, match.length, editor.getScrollOffsetY(), SDL_Color{46, 47, 108, 255});
     }
 }
 

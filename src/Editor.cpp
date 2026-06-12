@@ -102,107 +102,140 @@ void Editor::handleTextInput(const std::string &text)
     {
         mBuffer.insert(mCursor.row, mCursor.col, text);
         mCursor.col += text.size();
+        clearSelection();
+        ensureCursorVisibleVertically();
+    }
+    markActivity();
+}
+
+void Editor::handleBackSpace()
+{
+    if (isSearchActive())
+    {
+        mSearch->handleBackSpace();
+        updateSearchMatches();
+    }
+    else
+    {
+        if (mCursor.col > 0)
+        {
+            mBuffer.erase(mCursor.row, mCursor.col - 1);
+            mCursor.col--;
+        }
+        else if (mCursor.col == 0 && mCursor.row > 0)
+        {
+            mCursor.row--;
+            moveCursorToEndCol();
+            mBuffer.mergeWithNext(mCursor.row);
+            clearSelection();
+            ensureCursorVisibleVertically();
+        }
+    }
+    markActivity();
+}
+void Editor::handleReturn()
+{
+    if (!isSearchActive())
+    {
+        mBuffer.splitLine(mCursor.row, mCursor.col);
+        moveCursorToBeginCol();
+        mCursor.row++;
         markActivity();
         clearSelection();
         ensureCursorVisibleVertically();
     }
 }
 
-void Editor::handleBackSpace()
-{
-    if (mCursor.col > 0)
-    {
-        mBuffer.erase(mCursor.row, mCursor.col - 1);
-        mCursor.col--;
-    }
-    else if (mCursor.col == 0 && mCursor.row > 0)
-    {
-        mCursor.row--;
-        moveCursorToEndCol();
-        mBuffer.mergeWithNext(mCursor.row);
-    }
-    markActivity();
-    clearSelection();
-    ensureCursorVisibleVertically();
-}
-void Editor::handleReturn()
-{
-    mBuffer.splitLine(mCursor.row, mCursor.col);
-    moveCursorToBeginCol();
-    mCursor.row++;
-    markActivity();
-    clearSelection();
-    ensureCursorVisibleVertically();
-}
-
 void Editor::handleDelete(SDL_Keymod mod)
 {
-    bool shiftHeld = mod & SDL_KMOD_SHIFT;
-
-    // shift + del deletes entire line
-    if (shiftHeld)
+    if (isSearchActive())
     {
-        mBuffer.eraseRange(mCursor.row, 0, mBuffer.getLineSize(mCursor.row));
-        mBuffer.mergeWithNext(mCursor.row);
-        moveCursorToBeginCol();
+        mSearch->handleDelete();
+        updateSearchMatches();
     }
     else
     {
-        if (mCursor.col < mBuffer.getLineSize(mCursor.row))
-        {
-            mBuffer.erase(mCursor.row, mCursor.col);
-        }
-        else if (mCursor.col == mBuffer.getLineSize(mCursor.row) && mCursor.row < mBuffer.getLineCount() - 1)
-        {
-            mBuffer.mergeWithNext(mCursor.row);
-        }
-    }
+        bool shiftHeld = mod & SDL_KMOD_SHIFT;
 
+        // shift + del deletes entire line
+        if (shiftHeld)
+        {
+            mBuffer.eraseRange(mCursor.row, 0, mBuffer.getLineSize(mCursor.row));
+            mBuffer.mergeWithNext(mCursor.row);
+            moveCursorToBeginCol();
+        }
+        else
+        {
+            if (mCursor.col < mBuffer.getLineSize(mCursor.row))
+            {
+                mBuffer.erase(mCursor.row, mCursor.col);
+            }
+            else if (mCursor.col == mBuffer.getLineSize(mCursor.row) && mCursor.row < mBuffer.getLineCount() - 1)
+            {
+                mBuffer.mergeWithNext(mCursor.row);
+            }
+        }
+
+        clearSelection();
+        ensureCursorVisibleVertically();
+    }
     markActivity();
-    clearSelection();
-    ensureCursorVisibleVertically();
 }
 
 void Editor::handleLeft(SDL_Keymod mod)
 {
-    bool shiftHeld = mod & SDL_KMOD_SHIFT;
-    if (shiftHeld && !mSelectionActive)
+    if (isSearchActive())
     {
-        beginSelection();
-    }
-    moveCursorLeft();
-
-    if (shiftHeld)
-    {
-        updateSelection();
+        mSearch->handleLeft();
     }
     else
     {
-        clearSelection();
+        bool shiftHeld = mod & SDL_KMOD_SHIFT;
+        if (shiftHeld && !mSelectionActive)
+        {
+            beginSelection();
+        }
+        moveCursorLeft();
+
+        if (shiftHeld)
+        {
+            updateSelection();
+        }
+        else
+        {
+            clearSelection();
+        }
+        ensureCursorVisibleVertically();
     }
-    ensureCursorVisibleVertically();
     markActivity();
 }
 
 void Editor::handleRight(SDL_Keymod mod)
 {
-    bool shiftHeld = mod & SDL_KMOD_SHIFT;
-    if (shiftHeld && !mSelectionActive)
+    if (isSearchActive())
     {
-        beginSelection();
-    }
-    moveCursorRight();
-
-    if (shiftHeld)
-    {
-        updateSelection();
+        mSearch->handleRight();
     }
     else
     {
-        clearSelection();
-    }
+        bool shiftHeld = mod & SDL_KMOD_SHIFT;
+        if (shiftHeld && !mSelectionActive)
+        {
+            beginSelection();
+        }
+        moveCursorRight();
 
-    ensureCursorVisibleVertically();
+        if (shiftHeld)
+        {
+            updateSelection();
+        }
+        else
+        {
+            clearSelection();
+        }
+
+        ensureCursorVisibleVertically();
+    }
     markActivity();
 }
 
@@ -210,10 +243,7 @@ void Editor::handleUp(SDL_Keymod mod)
 {
     if (isSearchActive())
     {
-        mSearch->mCurrentMatch = (mSearch->mCurrentMatch + mSearch->getMatches().size() - 1) % mSearch->getMatches().size();
-        SearchMatch match = mSearch->getMatches()[mSearch->mCurrentMatch];
-        mCursor.row = match.row;
-        mCursor.col = match.col;
+        mCursor = mSearch->handleUp(mCursor);
     }
     else
     {
@@ -241,10 +271,7 @@ void Editor::handleDown(SDL_Keymod mod)
 {
     if (isSearchActive())
     {
-        mSearch->mCurrentMatch = (mSearch->mCurrentMatch + 1) % mSearch->getMatches().size();
-        SearchMatch match = mSearch->getMatches()[mSearch->mCurrentMatch];
-        mCursor.row = match.row;
-        mCursor.col = match.col;
+        mCursor = mSearch->handleDown(mCursor);
     }
     else
     {
@@ -271,59 +298,75 @@ void Editor::handleDown(SDL_Keymod mod)
 
 void Editor::handleHome(SDL_Keymod mod)
 {
-    bool shiftHeld = mod & SDL_KMOD_SHIFT;
-    bool ctrlHeld = mod & SDL_KMOD_CTRL;
-
-    if (shiftHeld && !mSelectionActive)
+    if (isSearchActive())
     {
-        beginSelection();
-    }
-    if (ctrlHeld)
-    {
-        moveCursorToFirstRow();
-    }
-
-    moveCursorToBeginCol();
-
-    if (shiftHeld)
-    {
-        updateSelection();
+        mSearch->resetCursor();
     }
     else
     {
-        clearSelection();
+        bool shiftHeld = mod & SDL_KMOD_SHIFT;
+        bool ctrlHeld = mod & SDL_KMOD_CTRL;
+
+        if (shiftHeld && !mSelectionActive)
+        {
+            beginSelection();
+        }
+        if (ctrlHeld)
+        {
+            moveCursorToFirstRow();
+        }
+
+        moveCursorToBeginCol();
+
+        if (shiftHeld)
+        {
+            updateSelection();
+        }
+        else
+        {
+            clearSelection();
+        }
+
+        ensureCursorVisibleVertically();
     }
 
-    ensureCursorVisibleVertically();
     markActivity();
 }
 
 void Editor::handleEnd(SDL_Keymod mod)
 {
-    bool shiftHeld = mod & SDL_KMOD_SHIFT;
-    bool ctrlHeld = mod & SDL_KMOD_CTRL;
-
-    if (shiftHeld && !mSelectionActive)
+    if (isSearchActive())
     {
-        beginSelection();
-    }
-    if (ctrlHeld)
-    {
-        moveCursorToLastRow();
-    }
-
-    moveCursorToEndCol();
-
-    if (shiftHeld)
-    {
-        updateSelection();
+        mSearch->handleEnd();
     }
     else
     {
-        clearSelection();
+        bool shiftHeld = mod & SDL_KMOD_SHIFT;
+        bool ctrlHeld = mod & SDL_KMOD_CTRL;
+
+        if (shiftHeld && !mSelectionActive)
+        {
+            beginSelection();
+        }
+        if (ctrlHeld)
+        {
+            moveCursorToLastRow();
+        }
+
+        moveCursorToEndCol();
+
+        if (shiftHeld)
+        {
+            updateSelection();
+        }
+        else
+        {
+            clearSelection();
+        }
+
+        ensureCursorVisibleVertically();
     }
 
-    ensureCursorVisibleVertically();
     markActivity();
 }
 /*
@@ -378,6 +421,7 @@ void Editor::handleF(SDL_Keymod mod)
         else
         {
             mSearch.reset();
+            mSearch->resetCursor();
             LOG_DEBUG() << "Search deactivated!";
         }
     }

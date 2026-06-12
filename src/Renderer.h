@@ -43,8 +43,9 @@ public:
     void renderText(const Editor &editor); 
     void renderSelection(const Editor &editor);
     void renderEditor(const Editor &editor);
-    void renderHighlightedRange(const std::string &text, uint32_t row, uint32_t col, uint32_t length,  uint32_t scrollOffsetY);
+    void renderHighlightedRange(const std::string &text, uint32_t row, uint32_t col, uint32_t length,  uint32_t scrollOffsetY, SDL_Color color = {46, 47, 48, 255});
     void renderSearchOverlay(const SearchSession &session);
+    void renderSearchCursor(const SearchSession &session);
     void renderSearchMatches(const SearchSession &session, const Editor &editor);
     void updateCursor();
     void updateEditor(Editor &editor);
