@@ -15,10 +15,27 @@ class SearchSession;
 struct EditorLayout {
     uint16_t marginTop = 20;
     uint16_t marginLeft = 40;
+    uint32_t marginRight = 50;
     uint16_t lineNumberAreaWidth = 40;
     uint16_t lineHeight = 0;
     uint16_t windowWidth = 0;
     uint16_t windowHeight = 0;
+};
+
+struct SearchOverlayLayout{
+    uint32_t queryX;
+    uint32_t queryY;
+    uint32_t queryWidth;
+    uint32_t queryHeight;
+    uint32_t matchBoxX;
+    uint32_t matchBoxWidth = 100;
+    uint32_t matchBoxPadding = 10;
+    uint32_t textX;
+    uint32_t textY;
+    uint32_t matchBoxTextX;
+    uint32_t textPadding = 5;
+    uint32_t boxSpacing = 5;
+    SDL_Color rectColor = {34, 35, 36, 255};
 };
 
 
@@ -67,5 +84,6 @@ private:
     SDL_Renderer *mRenderer;
     TTF_Font *mFont;
     EditorLayout mLayout;
+    SearchOverlayLayout mSearchLayout;
     int mScrollOffsetX = 0;
 };

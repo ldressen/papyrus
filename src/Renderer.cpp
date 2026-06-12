@@ -29,9 +29,19 @@ Renderer::Renderer(SDL_Window *window)
     {
         throw std::runtime_error("Failed to load font");
     }
-
+    // editor layout
     mLayout.lineHeight = getLineHeight();
     SDL_GetWindowSize(window, (int *)&mLayout.windowWidth, (int *)&mLayout.windowHeight);
+
+    // search layout
+    mSearchLayout.queryX = mLayout.marginLeft + mLayout.windowWidth / 2;
+    mSearchLayout.queryY = mLayout.marginTop + mLayout.lineHeight;
+    mSearchLayout.queryWidth = mLayout.windowWidth - mSearchLayout.queryX - mLayout.marginRight - mSearchLayout.matchBoxWidth;
+    mSearchLayout.queryHeight = 1.5 * mLayout.lineHeight;
+    mSearchLayout.matchBoxX = mSearchLayout.queryX + mSearchLayout.queryWidth + mSearchLayout.boxSpacing;
+    mSearchLayout.textX = mSearchLayout.queryX + mSearchLayout.textPadding;
+    mSearchLayout.textY = mSearchLayout.queryY + (mSearchLayout.queryHeight-mLayout.lineHeight)/2; // gives you a vertically centered text
+    mSearchLayout.matchBoxTextX = mSearchLayout.matchBoxX + mSearchLayout.textPadding;
 }
 
 Renderer::~Renderer()
@@ -269,17 +279,17 @@ void Renderer::renderSearchOverlay(const SearchSession &session)
 {
     uint32_t currMatch = session.hasMatches() ? session.getCurrentMatchIndex() + 1 : 0;
     const std::string &matchStr = std::to_string(currMatch) + "/" + std::to_string(session.getMatches().size());
-    uint32_t matchBoxWidth = measureTextWidth(matchStr) + 10;
-    uint32_t x = mLayout.marginLeft + mLayout.windowWidth / 2;
-    uint32_t y = mLayout.marginTop + mLayout.lineHeight;
-    uint32_t w = mLayout.windowWidth - x - 50 - matchBoxWidth;
-    uint32_t h = 1.5 * mLayout.lineHeight;
+    mSearchLayout.matchBoxWidth = measureTextWidth(matchStr) + mSearchLayout.matchBoxPadding;
+    uint32_t x = mSearchLayout.queryX;
+    uint32_t y = mSearchLayout.queryY;
+    uint32_t w = mSearchLayout.queryWidth;
+    uint32_t h = mSearchLayout.queryHeight;
 
-    drawRect(x, y, w, h, SDL_Color{34, 35, 36, 255});
-    drawRect(x + w + 5, y, matchBoxWidth, h, SDL_Color{34, 35, 36, 255});
-    drawText(session.getQuery(), x + 5, y + (h / 2) - mLayout.lineHeight / 2, SDL_Color{255, 255, 255, 255});
+    drawRect(x, y, w, h, mSearchLayout.rectColor);
+    drawRect(mSearchLayout.matchBoxX, mSearchLayout.queryY, mSearchLayout.matchBoxWidth, mSearchLayout.queryHeight, mSearchLayout.rectColor);
+    drawText(session.getQuery(), mSearchLayout.textX, mSearchLayout.textY);
 
-    drawText(matchStr, x + w + 10, y + (h / 2) - mLayout.lineHeight / 2);
+    drawText(matchStr, mSearchLayout.matchBoxTextX, mSearchLayout.textY);
 }
 
 void Renderer::renderSearchCursor(const SearchSession &session)
