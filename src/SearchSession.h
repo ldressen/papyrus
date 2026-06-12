@@ -25,6 +25,7 @@ public:
     uint32_t getCursor() const;
     void setMatches(const std::vector<SearchMatch> &matches);
     std::vector<SearchMatch> getMatches() const;
+    uint32_t getCurrentMatchIndex() const;
     bool hasMatches() const;
     uint32_t mCurrentMatch = 0;
 

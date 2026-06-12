@@ -96,6 +96,11 @@ std::vector<SearchMatch> SearchSession::getMatches() const
     return mMatches;
 }
 
+uint32_t SearchSession::getCurrentMatchIndex() const
+{
+    return mCurrentMatch;
+}
+
 bool SearchSession::hasMatches() const
 {
     return mMatches.size() > 0;

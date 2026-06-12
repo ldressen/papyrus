@@ -267,14 +267,19 @@ void Renderer::renderHighlightedRange(const std::string &text, uint32_t row, uin
 
 void Renderer::renderSearchOverlay(const SearchSession &session)
 {
+    uint32_t currMatch = session.hasMatches() ? session.getCurrentMatchIndex() + 1 : 0;
+    const std::string &matchStr = std::to_string(currMatch) + "/" + std::to_string(session.getMatches().size());
+    uint32_t matchBoxWidth = measureTextWidth(matchStr) + 10;
     uint32_t x = mLayout.marginLeft + mLayout.windowWidth / 2;
     uint32_t y = mLayout.marginTop + mLayout.lineHeight;
-    uint32_t w = mLayout.windowWidth - x - 50;
+    uint32_t w = mLayout.windowWidth - x - 50 - matchBoxWidth;
     uint32_t h = 1.5 * mLayout.lineHeight;
 
     drawRect(x, y, w, h, SDL_Color{34, 35, 36, 255});
+    drawRect(x + w + 5, y, matchBoxWidth, h, SDL_Color{34, 35, 36, 255});
     drawText(session.getQuery(), x + 5, y + (h / 2) - mLayout.lineHeight / 2, SDL_Color{255, 255, 255, 255});
-    // LOG_DEBUG() << "Render search: " << session.getQuery();
+
+    drawText(matchStr, x + w + 10, y + (h / 2) - mLayout.lineHeight / 2);
 }
 
 void Renderer::renderSearchCursor(const SearchSession &session)
