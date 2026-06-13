@@ -109,17 +109,22 @@ SDL_Color Renderer::getColorFromTokenType(const Token &token)
     case TokenType::OpenParen:
     case TokenType::CloseParen:
         return {255, 255, 0, 255};
-        break;//
+        break;
     case TokenType::Comment:
-        return hexToSDLColor("#8B949E"); break;
-    case TokenType::String: 
-        return hexToSDLColor("#A5D6FF"); break;
-    case TokenType::Keyword: 
-        return hexToSDLColor("#FF7B72"); break;
+        return hexToSDLColor("#8B949E");
+        break;
+    case TokenType::String:
+        return hexToSDLColor("#A5D6FF");
+        break;
+    case TokenType::Keyword:
+        return hexToSDLColor("#FF7B72");
+        break;
     case TokenType::Preprocessor:
-        return hexToSDLColor("#C586C0"); break;
+        return hexToSDLColor("#C586C0");
+        break;
     case TokenType::IncludeLib:
-        return hexToSDLColor("#A5D6FF"); break;
+        return hexToSDLColor("#A5D6FF");
+        break;
     default:
         return {255, 255, 255, 255};
     }
@@ -156,10 +161,14 @@ void Renderer::drawText(const std::string &text, int x, int y, SDL_Color color =
 
 void Renderer::drawTextTokenized(const std::string &text, uint32_t y, const std::vector<Token> &tokens)
 {
+    std::string expandedLine = expandTabs(text);
     for (const Token &token : tokens)
     {
-        const std::string &subs = text.substr(token.col, token.length);
-        drawText(subs, mLayout.marginLeft - mScrollOffsetX + measureTextWidth(text.substr(0, token.col)), y, getColorFromTokenType(token));
+        uint32_t vCol = getVirtualCol(text, token.col);
+        const std::string &subs = expandedLine.substr(vCol, token.length);
+        int xOffset = measureTextWidth(std::string(vCol, ' '));
+        int renderX = mLayout.marginLeft - mScrollOffsetX + xOffset;
+        drawText(subs, renderX, y, getColorFromTokenType(token));
     }
 }
 
@@ -452,6 +461,23 @@ const std::string Renderer::fitTextToWidth(const std::string &text, std::string 
     }
 
     return (text.substr(0, bestLength) + "..." + extension);
+}
+
+uint32_t Renderer::getVirtualCol(const std::string &text, uint32_t rawCol)
+{
+    uint32_t virtualCol = 0;
+    for (uint32_t i = 0; i < rawCol && i < text.size(); ++i)
+    {
+        if (text[i] == '\t')
+        {
+            virtualCol += 4;
+        }
+        else
+        {
+            virtualCol += 1;
+        }
+    }
+    return virtualCol;
 }
 
 void Renderer::present()

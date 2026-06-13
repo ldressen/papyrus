@@ -59,6 +59,7 @@ public:
     const SearchSession &getSearch() const;
     void updateSearchMatches();
 
+    void updateTokens();
     std::vector<std::vector<Token>> getTokens() const;
 
     void markActivity();
@@ -95,5 +96,5 @@ private:
 
     Language mLanguage = Language::Cpp;
     std::vector<std::vector<Token>> mTokens;
-    SyntaxHighlighter highlighter;
+    SyntaxHighlighter mHighlighter;
 };

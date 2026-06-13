@@ -73,6 +73,7 @@ public:
     void updateFileBrowser(FileBrowser &browser);
     void renderFileBrowserSelection(FileBrowser &browser);
     const std::string fitTextToWidth(const std::string &text, std::string &extension);
+    uint32_t getVirtualCol(const std::string &text, uint32_t rawCol);
     void present();
 
     void onResize(uint32_t w, uint32_t h);

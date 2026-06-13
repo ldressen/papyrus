@@ -82,7 +82,7 @@ void Editor::handleKey(const SDL_Event &event)
             loadFile("test.txt");
             break;
         case SDLK_F2:
-            mTokens = highlighter.tokenize(mBuffer, mLanguage);
+            mTokens = mHighlighter.tokenize(mBuffer, mLanguage);
             break;
         default:
             break;
@@ -104,6 +104,7 @@ void Editor::handleTextInput(const std::string &text)
         mCursor.col += text.size();
         clearSelection();
         ensureCursorVisibleVertically();
+        updateTokens();
     }
     markActivity();
 }
@@ -127,9 +128,10 @@ void Editor::handleBackSpace()
             mCursor.row--;
             moveCursorToEndCol();
             mBuffer.mergeWithNext(mCursor.row);
-            clearSelection();
-            ensureCursorVisibleVertically();
         }
+        clearSelection();
+        ensureCursorVisibleVertically();
+        updateTokens();
     }
     markActivity();
 }
@@ -143,6 +145,7 @@ void Editor::handleReturn()
         markActivity();
         clearSelection();
         ensureCursorVisibleVertically();
+        updateTokens();
     }
 }
 
@@ -178,6 +181,7 @@ void Editor::handleDelete(SDL_Keymod mod)
 
         clearSelection();
         ensureCursorVisibleVertically();
+        updateTokens();
     }
     markActivity();
 }
@@ -379,6 +383,7 @@ void Editor::handleComma(SDL_Keymod mod)
     {
         mBuffer.insert(mCursor.row, mBuffer.getLine(mCursor.row).size(), ";");
         moveCursorToEndCol();
+        updateTokens();
     }
 }
 
@@ -446,6 +451,7 @@ void Editor::handleV(SDL_Keymod mod)
         const std::string &text = SDL_GetClipboardText();
         LOG_DEBUG() << text;
         mCursor = mBuffer.insertFormatted(mCursor.row, mCursor.col, text);
+        updateTokens();
     }
 }
 
@@ -551,6 +557,13 @@ void Editor::loadFile(const std::filesystem::path &path)
         std::cerr << "ERROR: Could not open file " << path << "\n";
         return;
     }
+    if(path.extension() == ".cpp" || path.extension() == ".h"){
+        mLanguage = Language::Cpp;
+    }
+    else{
+        mLanguage = Language::PlainText;
+    }
+    
     std::vector<std::string> lines;
     std::string currentLine;
     while (std::getline(file, currentLine))
@@ -560,6 +573,7 @@ void Editor::loadFile(const std::filesystem::path &path)
 
     mCurrentFilePath = path;
     mBuffer.setLines(std::move(lines));
+    updateTokens();
     mCursor.row = 0;
     mCursor.col = 0;
     LOG_INFO() << path << " was loaded!";
@@ -616,6 +630,12 @@ void Editor::updateSearchMatches()
         mCursor.row = (size_t)match.row;
         mCursor.col = (size_t)match.col;
     }
+}
+
+void Editor::updateTokens()
+{
+    mTokens.clear();
+    mTokens = mHighlighter.tokenize(mBuffer, mLanguage);
 }
 
 std::vector<std::vector<Token>> Editor::getTokens() const
